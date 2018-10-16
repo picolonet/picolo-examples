@@ -1,72 +1,73 @@
 const pg = require('pg')
 const request = require('request')
+const async = require('async')
 
-// Create an app
-request.post('http://localhost:5000/create', { json: { name: 'test1' } },
-    (err, res, body) => {
-        console.log(err, body)
-    }
-)
+let pool = new pg.Pool()
 
-// Connect to app
-let connectionString = ''
-request.get('http://localhost:5000/test1',
-    (err, res, body) => {
-        console.log(err, body)
-        if (!err && res.statusCode == 200) {
-            connectionString = body
+function createApp(next) {
+    request.post('https://picolo.app/create', { json: { name: 'testApp' } },
+        (err, res, body) => {
+            console.log(err, body)
+            next()
         }
-    }
-)
+    )
+}
 
-const pool = new pg.Pool({
-    connectionString: connectionString,
-})
+function connectToApp(next) {
+    request.get('https://picolo.app/testApp',
+        (err, res, body) => {
+            console.log(err, body)
+            if (!err && res.statusCode == 200) {
+                pool = new pg.Pool({
+                    connectionString: body,
+                })
+            }
+            next()
+        }
+    )
+}
 
-// Create a table
-pool.query('CREATE TABLE IF NOT EXISTS t3 (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name STRING)', (err, res) => {
-    console.log(err, res)
-})
+function runQueries(next) {
+    pool.connect(function(err, client, done) {
 
-// Insert some data
-pool.query("INSERT INTO t3 (name) VALUES ('picolo')", (err, res) => {
-    console.log(err, res)
-})
+        var finish = function() {
+            done()
+            next()
+        }
 
-// Query it
-pool.query('SELECT name FROM t3', (err, res) => {
-    console.log(err, res)
-    res.rows.forEach(function(row) {
-        console.log(row);
-    })
-})
+        if (err) {
+            console.error('could not connect to picolo', err)
+            finish()
+        }
+        async.waterfall([
+                function(next) {
+                    // Create a table
+                    client.query('CREATE TABLE IF NOT EXISTS test_table (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name STRING)', next)
+                },
+                function(results, next) {
+                    // Insert some data
+                    client.query("INSERT INTO test_table (name) VALUES ('testApp')", next)
+                },
+                function(results, next) {
+                    // Query it
+                    client.query('SELECT name FROM test_table', next)
+                },
+            ],
+            function(err, results) {
+                if (err) {
+                    console.error('Error inserting into and selecting from test_table: ', err)
+                    finish()
+                }
 
-pool.end()
+                results.rows.forEach(function(row) {
+                    console.log(row)
+                })
 
-/*
-for (var i = 50; i >= 0; i--) {
-    // Create a table
-    pool.query('CREATE TABLE IF NOT EXISTS t3 (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name STRING)', (err, res) => {
-        //console.log(err, res)
-    })
-
-    // Insert some data
-    pool.query("INSERT INTO t3 (name) VALUES ('picolo')", (err, res) => {
-        //console.log(err, res)
-    })
-
-    // Query it
-    pool.query('SELECT count(*) FROM t3', (err, res) => {
-        //console.log(err, res)
-        res.rows.forEach(function(row) {
-            console.log(row);
-        })
+                finish()
+            })
     })
 }
 
-setTimeout(done, 1000)
-
-function done() {
-    pool.end()
-}
-*/
+async.waterfall([createApp, connectToApp, runQueries], function(error, success) {
+    console.log(error, success)
+})
