@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",
+    "ipfs": "^0.33.1",
+    "orbit-db": "^0.19.9",
     "pg": "^7.5.0",
     "request": "^2.88.0"
   }
