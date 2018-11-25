@@ -1,0 +1,29 @@
+{
+  "name": "picolo-examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.6.1",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "orbit-db": "^0.19.9",
+    "pg": "^7.5.0",
+    "request": "^2.88.0",
+    "ipfs": "^0.33.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/picolonet/picolo-examples.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/picolonet/picolo-examples/issues"
+  },
+  "homepage": "https://github.com/picolonet/picolo-examples#readme"
+}

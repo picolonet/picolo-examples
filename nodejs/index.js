@@ -5,18 +5,18 @@ const async = require('async')
 let pool = new pg.Pool()
 
 function createApp(next) {
-    request.post('https://picolo.app/create', { json: { name: 'testApp' } },
+    request.post('https://us-central1-flares-d1c56.cloudfunctions.net/createApp', { json: { name: 'testApp' } },
         (err, res, body) => {
-            console.log(err, body)
+            console.log(body)
             next()
         }
     )
 }
 
 function connectToApp(next) {
-    request.get('https://picolo.app/testApp',
+    request.get('https://us-central1-flares-d1c56.cloudfunctions.net/getApp/testApp',
         (err, res, body) => {
-            console.log(err, body)
+            console.log(body)
             if (!err && res.statusCode == 200) {
                 pool = new pg.Pool({
                     connectionString: body,
@@ -69,5 +69,5 @@ function runQueries(next) {
 }
 
 async.waterfall([createApp, connectToApp, runQueries], function(error, success) {
-    console.log(error, success)
+    console.log('done')
 })

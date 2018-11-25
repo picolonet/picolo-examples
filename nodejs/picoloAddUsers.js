@@ -18,9 +18,9 @@ if (args.length == 3) {
 }
 
 const config = {
-    user: 'root',
+    user: '',
     host: host,
-    database: 'defaultdb',
+    database: '',
     port: port
 }
 
